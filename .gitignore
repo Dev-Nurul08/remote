@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Production build outputs
+dist/
+frontend/dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# SQLite database local dev file
+*.sqlite
+*.sqlite3
+*.db
+
+# DO NOT IGNORE .ENV (Explicitly requested by user)
+!.env
+!backend/.env

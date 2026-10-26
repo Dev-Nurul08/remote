@@ -1,0 +1,29 @@
+{
+  "name": "fullstack-blog-project",
+  "version": "1.0.0",
+  "description": "Full-Stack Blog Website College Project (React, Node.js, Express, MySQL)",
+  "main": "backend/server.js",
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm run dev",
+    "dev": "concurrently --kill-others-on-fail -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run server\" \"npm run client\"",
+    "start": "cd backend && npm start",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "react",
+    "nodejs",
+    "express",
+    "mysql",
+    "jwt",
+    "fullstack",
+    "college-project",
+    "blog"
+  ],
+  "author": "Dev-Nurul",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

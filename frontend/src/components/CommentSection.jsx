@@ -40,7 +40,7 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    if (!window.confirm('Delete this comment?')) return;
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
     try {
       const res = await commentAPI.delete(commentId);
@@ -57,18 +57,18 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
   return (
     <section className="comments-section" id="comments-section">
       <h3 className="comments-header">
-        <MessageSquare size={24} color="#8b5cf6" />
-        <span>Discussion ({comments.length})</span>
+        <MessageSquare size={24} color="#d97706" />
+        <span style={{ color: '#0f172a' }}>Discussion ({comments.length})</span>
       </h3>
 
       {isAuthenticated ? (
-        <div className="glass-card comment-input-card">
+        <div className="comment-input-card">
           <form onSubmit={handleAddComment}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div className="author-mini-avatar">
                 {getInitials(user?.name)}
               </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+              <span style={{ fontSize: '0.92rem', fontWeight: 600, color: '#0f172a' }}>
                 {user?.name}
               </span>
             </div>
@@ -81,7 +81,7 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
 
             <textarea
               className="comment-textarea"
-              placeholder="Write a comment..."
+              placeholder="Join the discussion... Share your thoughts, question, or technical feedback"
               value={text}
               onChange={(e) => setText(e.target.value)}
               required
@@ -102,10 +102,12 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
           </form>
         </div>
       ) : (
-        <div className="glass-card" style={{ padding: '24px', textAlign: 'center', marginBottom: '32px' }}>
-          <h4 style={{ fontSize: '1.15rem', marginBottom: '8px' }}>Join the Discussion</h4>
-          <p style={{ color: '#94a3b8', fontSize: '0.92rem', marginBottom: '18px' }}>
-            Please sign in to post comments.
+        <div className="glass-card" style={{ padding: '28px', textAlign: 'center', marginBottom: '24px' }}>
+          <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '6px', color: '#0f172a' }}>
+            Join the Discussion
+          </h4>
+          <p style={{ color: '#64748b', fontSize: '0.92rem', marginBottom: '16px' }}>
+            Please sign in to share your thoughts and participate in this article's discussion.
           </p>
           <Link to="/login" className="btn-primary" id="btn-login-to-comment">
             <LogIn size={16} />
@@ -114,39 +116,43 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
         </div>
       )}
 
-      <div className="comments-list">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {comments.length === 0 ? (
-          <div className="glass-card" style={{ padding: '36px', textAlign: 'center', color: '#94a3b8' }}>
-            <p>No comments yet. Be the first to share your thoughts.</p>
+          <div className="glass-card" style={{ padding: '36px', textAlign: 'center', color: '#64748b' }}>
+            <p>No comments yet. Be the first to share your perspective!</p>
           </div>
         ) : (
           comments.map((c) => (
-            <div key={c.id} className="glass-card comment-item" id={`comment-item-${c.id}`}>
-              <div className="comment-avatar">
-                {getInitials(c.user_name)}
-              </div>
-              <div className="comment-content-wrap">
-                <div className="comment-meta">
-                  <div>
-                    <span className="comment-author-name">{c.user_name || 'User'}</span>
-                    <span style={{ margin: '0 8px', color: '#64748b' }}>•</span>
-                    <span className="comment-date">{formatDate(c.created_at)}</span>
+            <div key={c.id} className="comment-item" id={`comment-item-${c.id}`}>
+              <div className="comment-item-header">
+                <div className="comment-user-info">
+                  <div className="author-mini-avatar">
+                    {getInitials(c.user_name)}
                   </div>
-
-                  {isAuthenticated && (user?.id === c.user_id || user?.role === 'admin') && (
-                    <button
-                      onClick={() => handleDeleteComment(c.id)}
-                      className="btn-icon"
-                      title="Delete Comment"
-                      style={{ padding: '6px', color: '#f43f5e' }}
-                      id={`btn-delete-comment-${c.id}`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
+                  <div>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>
+                      {c.user_name || 'User'}
+                    </span>
+                    <span style={{ margin: '0 8px', color: '#cbd5e1' }}>•</span>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                      {formatDate(c.created_at)}
+                    </span>
+                  </div>
                 </div>
-                <p className="comment-text">{c.content}</p>
+
+                {isAuthenticated && (user?.id === c.user_id || user?.role === 'admin') && (
+                  <button
+                    onClick={() => handleDeleteComment(c.id)}
+                    className="btn-danger"
+                    title="Delete Comment"
+                    style={{ padding: '4px 8px', fontSize: '0.76rem' }}
+                    id={`btn-delete-comment-${c.id}`}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
+              <p className="comment-text">{c.content}</p>
             </div>
           ))
         )}

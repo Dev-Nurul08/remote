@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Edit3, AlertCircle, ArrowLeft } from 'lucide-react';
 import { postAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { calculateReadTime } from '../utils/helpers';
 
 const EditPost = () => {
   const { id } = useParams();
@@ -86,7 +85,7 @@ const EditPost = () => {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <p style={{ color: '#94a3b8' }}>Loading editor...</p>
+        <p style={{ color: '#64748b' }}>Loading editor...</p>
       </div>
     );
   }
@@ -101,10 +100,10 @@ const EditPost = () => {
         >
           <ArrowLeft size={16} /> Back to Article
         </button>
-        <h1 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>
-          Edit <span className="gradient-text">Article</span>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+          Edit <span style={{ color: '#2563eb' }}>Article</span>
         </h1>
-        <p style={{ color: '#94a3b8' }}>
+        <p style={{ color: '#64748b' }}>
           Modify the article content, update tags, or improve your summary.
         </p>
       </div>
@@ -125,7 +124,7 @@ const EditPost = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            style={{ fontSize: '1.1rem', fontWeight: 600 }}
+            style={{ fontSize: '1.05rem', fontWeight: 600 }}
           />
         </div>
 
@@ -173,7 +172,7 @@ const EditPost = () => {
             id="edit-summary"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            style={{ minHeight: '75px' }}
+            style={{ minHeight: '72px' }}
           />
         </div>
 
@@ -184,11 +183,11 @@ const EditPost = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            style={{ minHeight: '280px', fontSize: '1rem', lineHeight: '1.7' }}
+            style={{ minHeight: '260px', fontSize: '1rem', lineHeight: '1.7' }}
           />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginTop: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
           <button
             type="button"
             onClick={() => navigate(`/blog/${id}`)}

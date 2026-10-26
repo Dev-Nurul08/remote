@@ -19,7 +19,7 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
 
   const handleToggleLike = async () => {
     if (!isAuthenticated) {
-      if (window.confirm('Please log in to like this post. Go to login?')) {
+      if (window.confirm('Please sign in to like this post. Go to login?')) {
         navigate('/login');
       }
       return;
@@ -60,9 +60,9 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
       title={isLiked ? 'Unlike' : 'Like'}
     >
       <Heart
-        size={20}
-        color={isLiked ? '#f43f5e' : 'currentColor'}
-        fill={isLiked ? '#f43f5e' : 'none'}
+        size={18}
+        color={isLiked ? '#e11d48' : '#64748b'}
+        fill={isLiked ? '#e11d48' : 'none'}
       />
       <span>
         {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}

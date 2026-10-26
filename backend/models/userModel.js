@@ -28,10 +28,12 @@ const updateProfile = async (id, name, bio) => {
 const getUserStats = async (userId) => {
   const [postRows] = await db.query('SELECT COUNT(*) as totalPosts FROM posts WHERE author_id = ?', [userId]);
   const [likeRows] = await db.query('SELECT COUNT(*) as totalLikes FROM likes WHERE user_id = ?', [userId]);
+  const [commentRows] = await db.query('SELECT COUNT(*) as totalComments FROM comments WHERE user_id = ?', [userId]);
 
   return {
     totalPosts: postRows[0]?.totalPosts || 0,
-    totalLikesGiven: likeRows[0]?.totalLikes || 0
+    totalLikesGiven: likeRows[0]?.totalLikes || 0,
+    totalComments: commentRows[0]?.totalComments || 0
   };
 };
 

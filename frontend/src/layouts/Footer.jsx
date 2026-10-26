@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Database, Heart } from 'lucide-react';
+import { BookOpen, Database, Heart, ShieldCheck, Code2 } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -11,50 +11,51 @@ const Footer = () => {
             <div className="nav-brand-icon">
               <BookOpen size={18} />
             </div>
-            <span>
-              Dev<span className="gradient-text">Pulse</span>
+            <span style={{ fontWeight: 800 }}>
+              Dev<span style={{ color: '#2563eb' }}>Pulse</span>
             </span>
           </div>
           <p className="footer-brand-desc">
-            Full-stack blog platform built with React, Node.js, Express, and MySQL. Features authentication, real-time likes, and discussions.
+            A modern full-stack blogging platform built with React, Node.js, Express, and MySQL. Features OAuth sign-in, article publishing, interactive likes, and discussion threads.
           </p>
-          <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.85rem', color: '#94a3b8' }}>
-            <Database size={16} color="#6366f1" />
-            <span>Database: MySQL with foreign key cascades</span>
+          <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.86rem', color: '#64748b' }}>
+            <Database size={16} color="#2563eb" />
+            <span>Relational MySQL Database with Cascade Constraints</span>
           </div>
         </div>
 
         <div>
           <h4 className="footer-col-title">Navigation</h4>
           <ul className="footer-links">
-            <li><Link to="/" className="footer-link">Articles</Link></li>
-            <li><Link to="/create" className="footer-link">Publish Post</Link></li>
-            <li><Link to="/about" className="footer-link">Architecture</Link></li>
-            <li><Link to="/login" className="footer-link">Login</Link></li>
+            <li><Link to="/" className="footer-link">All Articles</Link></li>
+            <li><Link to="/?filter=trending" className="footer-link">Trending Posts</Link></li>
+            <li><Link to="/?filter=categories" className="footer-link">Categories</Link></li>
+            <li><Link to="/create" className="footer-link">Write Article</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="footer-col-title">Stack Details</h4>
+          <h4 className="footer-col-title">Technology</h4>
           <ul className="footer-links">
-            <li><span className="footer-link">JWT Authentication</span></li>
-            <li><span className="footer-link">Bcrypt Hashing</span></li>
-            <li><span className="footer-link">REST API</span></li>
-            <li><span className="footer-link">MySQL Relational DB</span></li>
+            <li><span className="footer-link">Google OAuth & JWT</span></li>
+            <li><span className="footer-link">Bcrypt Password Hashing</span></li>
+            <li><span className="footer-link">Express REST API</span></li>
+            <li><span className="footer-link">MySQL Connection Pool</span></li>
           </ul>
         </div>
       </div>
 
       <div className="footer-bottom">
         <div>
-          Built with <Heart size={14} color="#f43f5e" style={{ display: 'inline', verticalAlign: 'middle' }} /> by <strong>Dev-Nurul</strong>
+          Built with <Heart size={14} color="#e11d48" style={{ display: 'inline', verticalAlign: 'middle' }} /> by <strong>Dev-Nurul</strong>
         </div>
-        <div className="tech-badges">
-          <span className="tech-badge">React</span>
-          <span className="tech-badge">Node.js</span>
-          <span className="tech-badge">Express</span>
-          <span className="tech-badge">MySQL</span>
-          <span className="tech-badge">JWT</span>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#64748b' }}>
+            <ShieldCheck size={14} color="#059669" /> Secure Auth
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#64748b' }}>
+            <Code2 size={14} color="#2563eb" /> Clean Architecture
+          </span>
         </div>
       </div>
     </footer>

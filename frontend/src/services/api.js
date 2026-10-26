@@ -20,6 +20,7 @@ api.interceptors.request.use((config) => {
 
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
+  googleAuth: (data) => api.post('/auth/google', data),
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/profile', data)
@@ -35,6 +36,7 @@ export const postAPI = {
 
 export const commentAPI = {
   getByPost: (postId) => api.get(`/comments/post/${postId}`),
+  getMyComments: () => api.get('/comments/my-comments'),
   add: (postId, data) => api.post(`/comments/post/${postId}`, data),
   delete: (id) => api.delete(`/comments/${id}`)
 };

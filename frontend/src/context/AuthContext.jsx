@@ -61,6 +61,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (googleData) => {
+    setAuthError(null);
+    try {
+      const res = await authAPI.googleAuth(googleData);
+      if (res.data?.success) {
+        const { token: jwt, user: userData } = res.data;
+
+        setToken(jwt);
+        setUser(userData);
+
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        return { success: true };
+      }
+      return { success: false, message: 'Google authentication failed' };
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Google authentication failed';
+      setAuthError(msg);
+      return { success: false, message: msg };
+    }
+  };
+
   const register = async (name, email, password, bio = '') => {
     setAuthError(null);
     try {
@@ -108,6 +131,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     authError,
     login,
+    loginWithGoogle,
     register,
     logout,
     updateUser,

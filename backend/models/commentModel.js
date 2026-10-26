@@ -19,6 +19,25 @@ const getByPostId = async (postId) => {
   return rows;
 };
 
+const getByUserId = async (userId) => {
+  const sql = `
+    SELECT 
+      c.id, 
+      c.post_id, 
+      c.user_id, 
+      c.content, 
+      c.created_at,
+      p.title AS post_title
+    FROM comments c
+    JOIN posts p ON c.post_id = p.id
+    WHERE c.user_id = ?
+    ORDER BY c.created_at DESC
+  `;
+
+  const [rows] = await db.query(sql, [userId]);
+  return rows;
+};
+
 const getById = async (id) => {
   const [rows] = await db.query('SELECT * FROM comments WHERE id = ?', [id]);
   return rows[0];
@@ -38,6 +57,7 @@ const remove = async (id) => {
 
 module.exports = {
   getByPostId,
+  getByUserId,
   getById,
   create,
   remove

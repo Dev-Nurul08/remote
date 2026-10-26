@@ -5,7 +5,7 @@ import { formatDate, getInitials } from '../utils/helpers';
 
 const BlogCard = ({ post }) => {
   return (
-    <article className="glass-card blog-card" id={`blog-card-${post.id}`}>
+    <article className="blog-card" id={`blog-card-${post.id}`}>
       <div className="blog-card-image-wrap">
         <Link to={`/blog/${post.id}`}>
           <img
@@ -19,7 +19,7 @@ const BlogCard = ({ post }) => {
           <span className="category-badge">{post.category || 'Technology'}</span>
         </div>
         <div className="blog-card-readtime">
-          <Clock size={12} />
+          <Clock size={12} color="#ffffff" />
           <span>{post.read_time || '5 min read'}</span>
         </div>
       </div>
@@ -43,11 +43,15 @@ const BlogCard = ({ post }) => {
 
           <div className="blog-card-metrics">
             <span className="metric-item">
-              <Heart size={15} color={post.likes_count > 0 ? '#f43f5e' : 'currentColor'} fill={post.likes_count > 0 ? '#f43f5e' : 'none'} />
+              <Heart 
+                size={16} 
+                color={post.likes_count > 0 ? '#e11d48' : '#94a3b8'} 
+                fill={post.likes_count > 0 ? '#e11d48' : 'none'} 
+              />
               <span>{post.likes_count || 0}</span>
             </span>
             <span className="metric-item">
-              <MessageSquare size={15} />
+              <MessageSquare size={16} color="#d97706" />
               <span>{post.comments_count || 0}</span>
             </span>
           </div>

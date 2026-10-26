@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PenSquare, AlertCircle } from 'lucide-react';
+import { PenSquare, AlertCircle, ArrowLeft, Image as ImageIcon, Tag, Layers } from 'lucide-react';
 import { postAPI } from '../services/api';
 import { calculateReadTime } from '../utils/helpers';
 
@@ -61,11 +61,20 @@ const CreatePost = () => {
 
   return (
     <div className="editor-container">
+      <button
+        onClick={() => navigate('/')}
+        className="back-link"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+      >
+        <ArrowLeft size={16} />
+        <span>Back to Articles</span>
+      </button>
+
       <div className="editor-header">
-        <h1 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>
-          Publish a New <span className="gradient-text">Article</span>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+          Publish a New <span style={{ color: '#2563eb' }}>Article</span>
         </h1>
-        <p style={{ color: '#94a3b8' }}>
+        <p style={{ color: '#64748b' }}>
           Share your knowledge, architectural insights, or technical tutorial with the community.
         </p>
       </div>
@@ -83,11 +92,11 @@ const CreatePost = () => {
           <input
             id="post-title"
             type="text"
-            placeholder="e.g. Building Scalable APIs with Node.js and MySQL"
+            placeholder="e.g. Modern Full-Stack Web Development Architecture"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            style={{ fontSize: '1.1rem', fontWeight: 600 }}
+            style={{ fontSize: '1.05rem', fontWeight: 600 }}
           />
         </div>
 
@@ -109,7 +118,7 @@ const CreatePost = () => {
           </div>
 
           <div>
-            <label className="auth-label" htmlFor="post-tags">Tags</label>
+            <label className="auth-label" htmlFor="post-tags">Tags (comma separated)</label>
             <input
               id="post-tags"
               type="text"
@@ -129,17 +138,25 @@ const CreatePost = () => {
             onChange={(e) => setCoverImage(e.target.value)}
           />
           <div style={{ marginTop: '10px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Preset images:</span>
-            <div className="preset-images-list">
+            <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px' }}>Quick preset cover images:</span>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {PRESET_IMAGES.map((img, idx) => (
-                <img
+                <button
+                  type="button"
                   key={idx}
-                  src={img.url}
-                  alt={img.label}
-                  className={`preset-thumb ${coverImage === img.url ? 'selected' : ''}`}
                   onClick={() => setCoverImage(img.url)}
-                  title={img.label}
-                />
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '0.8rem',
+                    borderRadius: '6px',
+                    border: coverImage === img.url ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                    backgroundColor: coverImage === img.url ? '#eff6ff' : '#ffffff',
+                    color: coverImage === img.url ? '#2563eb' : '#334155',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {img.label}
+                </button>
               ))}
             </div>
           </div>
@@ -152,28 +169,28 @@ const CreatePost = () => {
             placeholder="A brief 1-2 sentence overview shown in the article feed..."
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            style={{ minHeight: '75px' }}
+            style={{ minHeight: '72px' }}
           />
         </div>
 
         <div className="auth-form-group">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <label className="auth-label" htmlFor="post-content" style={{ margin: 0 }}>Full Article Content *</label>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
               {wordCount} words • {readTime}
             </span>
           </div>
           <textarea
             id="post-content"
-            placeholder="Write your article here..."
+            placeholder="Write your article in detailed paragraphs..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            style={{ minHeight: '280px', fontSize: '1rem', lineHeight: '1.7' }}
+            style={{ minHeight: '260px', fontSize: '1rem', lineHeight: '1.7' }}
           />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginTop: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
           <button
             type="button"
             onClick={() => navigate('/')}

@@ -41,6 +41,51 @@ const register = async (req, res) => {
   }
 };
 
+const googleAuth = async (req, res) => {
+  try {
+    const { name, email, password, avatar } = req.body;
+
+    if (!email) {
+      return sendError(res, 'Gmail address is required', 400);
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    let user = await userModel.findByEmail(cleanEmail);
+
+    if (!user) {
+      const pass = password || 'OAuth_' + Math.random().toString(36).substring(2, 10);
+      const hashedPassword = await bcrypt.hash(pass, 10);
+      const userName = name || cleanEmail.split('@')[0];
+
+      const userId = await userModel.createUser(userName, cleanEmail, hashedPassword, 'Registered via Google OAuth');
+      user = {
+        id: userId,
+        name: userName,
+        email: cleanEmail,
+        bio: 'Registered via Google OAuth',
+        role: 'user',
+        avatar: avatar || null
+      };
+    }
+
+    const token = generateToken(user);
+
+    return sendSuccess(res, 'Google authentication successful', {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        role: user.role,
+        avatar: user.avatar
+      }
+    });
+  } catch (err) {
+    return sendError(res, 'Google authentication error', 500);
+  }
+};
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -125,6 +170,7 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
   register,
+  googleAuth,
   login,
   getMe,
   updateProfile

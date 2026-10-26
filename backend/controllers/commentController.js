@@ -10,6 +10,15 @@ const getComments = async (req, res) => {
   }
 };
 
+const getMyComments = async (req, res) => {
+  try {
+    const comments = await commentModel.getByUserId(req.user.id);
+    return sendSuccess(res, 'User comments fetched', { count: comments.length, comments });
+  } catch (err) {
+    return sendError(res, 'Failed to retrieve user comments', 500);
+  }
+};
+
 const addComment = async (req, res) => {
   try {
     const { content } = req.body;
@@ -59,6 +68,7 @@ const deleteComment = async (req, res) => {
 
 module.exports = {
   getComments,
+  getMyComments,
   addComment,
   deleteComment
 };

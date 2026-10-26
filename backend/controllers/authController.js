@@ -1,135 +1,70 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../config/db');
-require('dotenv').config();
+const userModel = require('../models/userModel');
+const generateToken = require('../utils/generateToken');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'college_blog_project_super_secret_jwt_key_2026';
-
-// Register User
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { name, email, password, bio } = req.body;
 
-    // Validation
     if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name, email, and password are required fields.'
-      });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid email address.'
-      });
+      return sendError(res, 'Name, email, and password are required', 400);
     }
 
     if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 6 characters long.'
-      });
+      return sendError(res, 'Password must be at least 6 characters long', 400);
     }
 
-    // Check if user already exists
-    const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
-    if (existing.length > 0) {
-      return res.status(409).json({
-        success: false,
-        message: 'An account with this email address already exists. Please log in.'
-      });
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = await userModel.findByEmail(cleanEmail);
+
+    if (existing) {
+      return sendError(res, 'An account with this email already exists', 409);
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = await userModel.createUser(name.trim(), cleanEmail, hashedPassword, bio);
 
-    // Insert user
-    const insertSql = `
-      INSERT INTO users (name, email, password, bio, role)
-      VALUES (?, ?, ?, ?, 'user')
-    `;
-    const [result] = await db.query(insertSql, [
-      name.trim(),
-      email.toLowerCase().trim(),
-      hashedPassword,
-      bio ? bio.trim() : 'Avid blog reader and technology enthusiast.'
-    ]);
+    const newUser = {
+      id: userId,
+      name: name.trim(),
+      email: cleanEmail,
+      bio: bio || '',
+      role: 'user'
+    };
 
-    const newUserId = result.insertId;
+    const token = generateToken(newUser);
 
-    // Generate JWT Token
-    const token = jwt.sign(
-      { id: newUserId, email: email.toLowerCase().trim(), name: name.trim(), role: 'user' },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful! Welcome to the Blog platform.',
-      token,
-      user: {
-        id: newUserId,
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        bio: bio ? bio.trim() : 'Avid blog reader and technology enthusiast.',
-        role: 'user'
-      }
-    });
+    return sendSuccess(res, 'Registration successful', { token, user: newUser }, 201);
   } catch (err) {
-    console.error('Registration Error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during registration. Please try again later.'
-    });
+    return sendError(res, 'Server error during registration', 500);
   }
 };
 
-// Login User
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter both email and password.'
-      });
+      return sendError(res, 'Please provide both email and password', 400);
     }
 
-    // Find user by email
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
-    if (users.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password. Please verify your credentials.'
-      });
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await userModel.findByEmail(cleanEmail);
+
+    if (!user) {
+      return sendError(res, 'Invalid email or password', 401);
     }
 
-    const user = users[0];
-
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password. Please verify your credentials.'
-      });
+      return sendError(res, 'Invalid email or password', 401);
     }
 
-    // Generate token
-    const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = generateToken(user);
 
-    return res.status(200).json({
-      success: true,
-      message: 'Login successful! Welcome back.',
+    return sendSuccess(res, 'Login successful', {
       token,
       user: {
         id: user.id,
@@ -141,70 +76,42 @@ exports.login = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Login Error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during login. Please try again later.'
-    });
+    return sendError(res, 'Server error during login', 500);
   }
 };
 
-// Get Current User Profile (/api/auth/me)
-exports.getMe = async (req, res) => {
+const getMe = async (req, res) => {
   try {
-    const [users] = await db.query(
-      'SELECT id, name, email, bio, role, avatar, created_at FROM users WHERE id = ?',
-      [req.user.id]
-    );
+    const user = await userModel.findById(req.user.id);
 
-    if (users.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'User profile not found.'
-      });
+    if (!user) {
+      return sendError(res, 'User not found', 404);
     }
 
-    const user = users[0];
+    const stats = await userModel.getUserStats(user.id);
 
-    // Fetch user statistics
-    const [postCountRes] = await db.query('SELECT COUNT(*) as totalPosts FROM posts WHERE author_id = ?', [user.id]);
-    const [likeCountRes] = await db.query('SELECT COUNT(*) as totalLikes FROM likes WHERE user_id = ?', [user.id]);
-
-    return res.status(200).json({
-      success: true,
+    return sendSuccess(res, 'Profile fetched', {
       user: {
         ...user,
-        stats: {
-          totalPosts: postCountRes[0].totalPosts || 0,
-          totalLikesGiven: likeCountRes[0].totalLikes || 0
-        }
+        stats
       }
     });
   } catch (err) {
-    console.error('Profile Fetch Error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error retrieving user profile.'
-    });
+    return sendError(res, 'Failed to retrieve profile', 500);
   }
 };
 
-// Update Profile
-exports.updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { name, bio } = req.body;
+
     if (!name) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name cannot be empty.'
-      });
+      return sendError(res, 'Name cannot be empty', 400);
     }
 
-    await db.query('UPDATE users SET name = ?, bio = ? WHERE id = ?', [name.trim(), bio ? bio.trim() : '', req.user.id]);
+    await userModel.updateProfile(req.user.id, name.trim(), bio ? bio.trim() : '');
 
-    return res.status(200).json({
-      success: true,
-      message: 'Profile updated successfully!',
+    return sendSuccess(res, 'Profile updated successfully', {
       user: {
         id: req.user.id,
         name: name.trim(),
@@ -212,10 +119,13 @@ exports.updateProfile = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Profile Update Error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error updating profile.'
-    });
+    return sendError(res, 'Failed to update profile', 500);
   }
+};
+
+module.exports = {
+  register,
+  login,
+  getMe,
+  updateProfile
 };

@@ -10,8 +10,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [bio, setBio] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -19,39 +19,37 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Client-side validations
     if (!name.trim() || !email.trim() || !password) {
-      setErrorMessage('Please fill in all required fields.');
+      setError('Please fill in all required fields.');
       return;
     }
 
     if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters in length.');
+      setError('Password must be at least 6 characters.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match. Please re-enter.');
+      setError('Passwords do not match.');
       return;
     }
 
-    setIsSubmitting(true);
-    setErrorMessage('');
+    setLoading(true);
+    setError('');
 
     const res = await register(name.trim(), email.trim(), password, bio.trim());
-    setIsSubmitting(false);
+    setLoading(false);
 
     if (res.success) {
       navigate('/', { replace: true });
     } else {
-      setErrorMessage(res.message);
+      setError(res.message);
     }
   };
 
   return (
     <div className="auth-page-container">
       <div className="glass-card auth-card">
-        {/* Header */}
         <div className="auth-header">
           <div style={{ display: 'inline-flex', padding: '10px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', marginBottom: '12px' }}>
             <UserPlus size={26} />
@@ -60,15 +58,13 @@ const Register = () => {
           <p className="auth-subtitle">Register to write articles, leave feedback, and interact with authors.</p>
         </div>
 
-        {/* Error Alert */}
-        {errorMessage && (
+        {error && (
           <div className="alert-box alert-error" id="register-error-alert">
             <AlertCircle size={18} />
-            <span>{errorMessage}</span>
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Registration Form */}
         <form onSubmit={handleSubmit} id="register-form">
           <div className="auth-form-group">
             <label className="auth-label" htmlFor="register-name">Full Name *</label>
@@ -77,7 +73,7 @@ const Register = () => {
               <input
                 id="register-name"
                 type="text"
-                placeholder="e.g. Alex Morgan"
+                placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={{ paddingLeft: '42px' }}
@@ -148,7 +144,7 @@ const Register = () => {
               <FileText size={18} style={{ position: 'absolute', left: '14px', top: '16px', color: '#64748b' }} />
               <textarea
                 id="register-bio"
-                placeholder="A few words about yourself or your college department..."
+                placeholder="A few words about yourself..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 style={{ paddingLeft: '42px', minHeight: '75px' }}
@@ -160,14 +156,13 @@ const Register = () => {
             type="submit"
             className="btn-primary"
             style={{ width: '100%', marginTop: '8px', padding: '12px' }}
-            disabled={isSubmitting}
+            disabled={loading}
             id="register-submit-button"
           >
-            {isSubmitting ? 'Registering Account...' : 'Complete Registration'}
+            {loading ? 'Creating...' : 'Register'}
           </button>
         </form>
 
-        {/* Footer Link */}
         <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: '#94a3b8' }}>
           Already have an account?{' '}
           <Link to="/login" style={{ color: '#818cf8', fontWeight: 600 }} id="link-to-login">

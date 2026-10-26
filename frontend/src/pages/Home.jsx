@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, Sparkles, AlertCircle } from 'lucide-react';
 import { postAPI } from '../services/api';
 import BlogCard from '../components/BlogCard';
 
@@ -7,45 +7,43 @@ const CATEGORIES = ['All', 'Technology', 'Database', 'WebDev', 'Programming', 'C
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('All');
 
   const fetchPosts = async () => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
     try {
       const params = {};
-      if (searchTerm.trim()) params.search = searchTerm.trim();
-      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (search.trim()) params.search = search.trim();
+      if (category !== 'All') params.category = category;
 
       const res = await postAPI.getAll(params);
-      if (res.data && res.data.success) {
+      if (res.data?.success) {
         setPosts(res.data.posts);
       }
     } catch (err) {
-      console.error('Failed to load posts:', err);
-      setError('Unable to load articles. Please ensure the backend server is running.');
+      setError('Could not load posts. Please verify server is running.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const delay = setTimeout(() => {
       fetchPosts();
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [searchTerm, selectedCategory]);
+    }, 200);
+    return () => clearTimeout(delay);
+  }, [search, category]);
 
   return (
     <div>
-      {/* Hero Header */}
       <section className="hero-section">
         <div className="hero-pill">
           <Sparkles size={14} />
-          <span>College Full-Stack Project • React • Express • MySQL</span>
+          <span>Full Stack Project • React • Express • MySQL</span>
         </div>
         <h1 className="hero-title">
           Explore Ideas, Architecture & <span className="gradient-text">Modern Tech</span>
@@ -54,78 +52,60 @@ const Home = () => {
           A fully connected relational blogging system engineered with complete user authentication, interactive engagement, and clean RESTful design.
         </p>
 
-        {/* Search & Category Filter */}
         <div className="search-filter-container">
           <div className="search-bar-wrapper">
             <Search className="search-icon" size={20} />
             <input
               type="text"
               className="search-input"
-              placeholder="Search articles by title, keywords, or topics..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search articles by title or keywords..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               id="search-input-field"
             />
           </div>
 
           <div className="category-pills">
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.map((c) => (
               <button
-                key={cat}
-                className={`category-pill-btn ${selectedCategory === cat ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-                id={`category-btn-${cat.toLowerCase()}`}
+                key={c}
+                className={`category-pill-btn ${category === c ? 'active' : ''}`}
+                onClick={() => setCategory(c)}
+                id={`category-btn-${c.toLowerCase()}`}
               >
-                {cat}
+                {c}
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Main Posts Area */}
       <section>
-        {isLoading ? (
+        {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <div style={{
-              width: '44px',
-              height: '44px',
-              border: '3px solid rgba(99, 102, 241, 0.2)',
-              borderTop: '3px solid #6366f1',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px'
-            }} />
-            <p style={{ color: '#94a3b8' }}>Loading published articles...</p>
-            <style>{`
-              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-            `}</style>
+            <p style={{ color: '#94a3b8' }}>Loading articles...</p>
           </div>
         ) : error ? (
-          <div className="glass-card" style={{ padding: '40px', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-            <AlertCircle size={40} color="#f43f5e" style={{ margin: '0 auto 16px' }} />
-            <h3 style={{ marginBottom: '10px' }}>Connection Issue</h3>
-            <p style={{ color: '#94a3b8', marginBottom: '20px' }}>{error}</p>
-            <button onClick={fetchPosts} className="btn-primary" id="btn-retry-posts">
-              <RefreshCw size={16} /> Try Again
+          <div className="glass-card" style={{ padding: '36px', textAlign: 'center', maxWidth: '500px', margin: '0 auto' }}>
+            <AlertCircle size={36} color="#f43f5e" style={{ margin: '0 auto 12px' }} />
+            <p style={{ color: '#94a3b8', marginBottom: '16px' }}>{error}</p>
+            <button onClick={fetchPosts} className="btn-primary">
+              Retry
             </button>
           </div>
         ) : posts.length === 0 ? (
-          <div className="glass-card" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-            <h3 style={{ marginBottom: '10px' }}>No Articles Found</h3>
-            <p style={{ color: '#94a3b8', marginBottom: '24px' }}>
-              {searchTerm || selectedCategory !== 'All'
-                ? 'No matching articles match your query. Try clearing your filters.'
-                : 'No articles have been published yet. Be the first to share an article!'}
+          <div className="glass-card" style={{ padding: '50px 20px', textAlign: 'center', maxWidth: '500px', margin: '0 auto' }}>
+            <h3 style={{ marginBottom: '8px' }}>No Articles Found</h3>
+            <p style={{ color: '#94a3b8', marginBottom: '20px' }}>
+              No articles match your query. Try clearing your search.
             </p>
-            {(searchTerm || selectedCategory !== 'All') && (
+            {(search || category !== 'All') && (
               <button
                 onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('All');
+                  setSearch('');
+                  setCategory('All');
                 }}
                 className="btn-secondary"
-                id="btn-reset-filters"
               >
                 Clear Filters
               </button>
@@ -133,15 +113,12 @@ const Home = () => {
           </div>
         ) : (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 500 }}>
-                Showing {posts.length} {posts.length === 1 ? 'article' : 'articles'}
-                {selectedCategory !== 'All' && ` in ${selectedCategory}`}
-              </span>
+            <div style={{ marginBottom: '16px', color: '#94a3b8', fontSize: '0.9rem' }}>
+              Showing {posts.length} {posts.length === 1 ? 'article' : 'articles'}
             </div>
             <div className="blog-grid">
-              {posts.map((post) => (
-                <BlogCard key={post.id} post={post} />
+              {posts.map((item) => (
+                <BlogCard key={item.id} post={item} />
               ))}
             </div>
           </div>

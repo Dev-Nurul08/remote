@@ -9,101 +9,92 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
-  // Initialize Auth from localStorage on application load
   useEffect(() => {
-    const initializeAuth = async () => {
-      const savedToken = localStorage.getItem('blog_auth_token');
-      const savedUser = localStorage.getItem('blog_auth_user');
+    const initAuth = async () => {
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
 
       if (savedToken) {
         setToken(savedToken);
         if (savedUser) {
           try {
             setUser(JSON.parse(savedUser));
-          } catch (e) {
-            console.error('Failed to parse cached user:', e);
-          }
+          } catch (e) {}
         }
 
-        // Verify token with backend
         try {
           const res = await authAPI.getMe();
-          if (res.data && res.data.user) {
+          if (res.data?.user) {
             setUser(res.data.user);
-            localStorage.setItem('blog_auth_user', JSON.stringify(res.data.user));
+            localStorage.setItem('user', JSON.stringify(res.data.user));
           }
         } catch (err) {
-          console.warn('Stored token was invalid or expired. Resetting session.');
           logout();
         }
       }
       setIsLoading(false);
     };
 
-    initializeAuth();
+    initAuth();
   }, []);
 
-  // Login handler
   const login = async (email, password) => {
     setAuthError(null);
     try {
       const res = await authAPI.login({ email, password });
-      if (res.data && res.data.success) {
-        const { token: receivedToken, user: receivedUser } = res.data;
-        
-        setToken(receivedToken);
-        setUser(receivedUser);
+      if (res.data?.success) {
+        const { token: jwt, user: userData } = res.data;
 
-        localStorage.setItem('blog_auth_token', receivedToken);
-        localStorage.setItem('blog_auth_user', JSON.stringify(receivedUser));
+        setToken(jwt);
+        setUser(userData);
 
-        return { success: true, message: res.data.message || 'Login successful!' };
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        return { success: true };
       }
       return { success: false, message: 'Login failed' };
     } catch (err) {
-      const message = err.response?.data?.message || 'Login failed. Please verify your credentials.';
-      setAuthError(message);
-      return { success: false, message };
+      const msg = err.response?.data?.message || 'Login failed';
+      setAuthError(msg);
+      return { success: false, message: msg };
     }
   };
 
-  // Registration handler
   const register = async (name, email, password, bio = '') => {
     setAuthError(null);
     try {
       const res = await authAPI.register({ name, email, password, bio });
-      if (res.data && res.data.success) {
-        const { token: receivedToken, user: receivedUser } = res.data;
+      if (res.data?.success) {
+        const { token: jwt, user: userData } = res.data;
 
-        setToken(receivedToken);
-        setUser(receivedUser);
+        setToken(jwt);
+        setUser(userData);
 
-        localStorage.setItem('blog_auth_token', receivedToken);
-        localStorage.setItem('blog_auth_user', JSON.stringify(receivedUser));
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('user', JSON.stringify(userData));
 
-        return { success: true, message: res.data.message || 'Registration successful!' };
+        return { success: true };
       }
       return { success: false, message: 'Registration failed' };
     } catch (err) {
-      const message = err.response?.data?.message || 'Registration failed. Please check inputs.';
-      setAuthError(message);
-      return { success: false, message };
+      const msg = err.response?.data?.message || 'Registration failed';
+      setAuthError(msg);
+      return { success: false, message: msg };
     }
   };
 
-  // Logout handler
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('blog_auth_token');
-    localStorage.removeItem('blog_auth_user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
-  // Update User Profile in Context
-  const updateUser = (updatedFields) => {
+  const updateUser = (fields) => {
     setUser((prev) => {
-      const updated = { ...prev, ...updatedFields };
-      localStorage.setItem('blog_auth_user', JSON.stringify(updated));
+      const updated = { ...prev, ...fields };
+      localStorage.setItem('user', JSON.stringify(updated));
       return updated;
     });
   };
@@ -113,26 +104,25 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     token,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: Boolean(token && user),
     isLoading,
     authError,
     login,
     register,
     logout,
     updateUser,
-    clearError,
+    clearError
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom Hook to consume Auth Context easily
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used inside AuthProvider');
   }
-  return context;
+  return ctx;
 };
 
 export default AuthContext;

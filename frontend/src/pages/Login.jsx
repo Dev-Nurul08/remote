@@ -7,8 +7,8 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -19,20 +19,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      setErrorMessage('Please enter both email and password.');
+      setError('Please enter both email and password.');
       return;
     }
 
-    setIsSubmitting(true);
-    setErrorMessage('');
+    setLoading(true);
+    setError('');
 
     const res = await login(email, password);
-    setIsSubmitting(false);
+    setLoading(false);
 
     if (res.success) {
       navigate(redirectPath, { replace: true });
     } else {
-      setErrorMessage(res.message);
+      setError(res.message);
     }
   };
 
@@ -44,13 +44,12 @@ const Login = () => {
       setEmail('demo@example.com');
       setPassword('password123');
     }
-    setErrorMessage('');
+    setError('');
   };
 
   return (
     <div className="auth-page-container">
       <div className="glass-card auth-card">
-        {/* Header */}
         <div className="auth-header">
           <div style={{ display: 'inline-flex', padding: '10px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', marginBottom: '12px' }}>
             <LogIn size={26} />
@@ -59,15 +58,14 @@ const Login = () => {
           <p className="auth-subtitle">Sign in to your account to like, comment, and publish articles.</p>
         </div>
 
-        {/* College Project Quick Demo Fill */}
         <div className="demo-credentials-box">
           <div className="demo-credentials-title">
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={14} /> College Evaluation Demo
+              <Sparkles size={14} /> Quick Demo Credentials
             </span>
           </div>
           <p className="demo-credentials-text" style={{ marginBottom: '10px' }}>
-            Click below to auto-fill pre-seeded credentials for testing:
+            Click below to auto-fill pre-seeded credentials:
           </p>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
@@ -86,20 +84,18 @@ const Login = () => {
               style={{ fontSize: '0.8rem', padding: '6px 12px', flex: 1 }}
               id="btn-fill-demo-admin"
             >
-              Admin (Author)
+              Admin Author
             </button>
           </div>
         </div>
 
-        {/* Error Alert */}
-        {errorMessage && (
+        {error && (
           <div className="alert-box alert-error" id="login-error-alert">
             <AlertCircle size={18} />
-            <span>{errorMessage}</span>
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit} id="login-form">
           <div className="auth-form-group">
             <label className="auth-label" htmlFor="login-email">Email Address</label>
@@ -145,14 +141,13 @@ const Login = () => {
             type="submit"
             className="btn-primary"
             style={{ width: '100%', marginTop: '8px', padding: '12px' }}
-            disabled={isSubmitting}
+            disabled={loading}
             id="login-submit-button"
           >
-            {isSubmitting ? 'Authenticating...' : 'Sign In'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
-        {/* Footer Link */}
         <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: '#94a3b8' }}>
           Don't have an account yet?{' '}
           <Link to="/register" style={{ color: '#818cf8', fontWeight: 600 }} id="link-to-register">

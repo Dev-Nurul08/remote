@@ -1,13 +1,9 @@
 import React from 'react';
-import { 
-  Database, Server, Layout, ShieldCheck, Key, RefreshCw, 
-  Layers, CheckCircle2, FileCode, GitBranch 
-} from 'lucide-react';
+import { Database, Server, Layout, FileCode } from 'lucide-react';
 
 const About = () => {
   return (
     <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-      {/* Title */}
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <span className="category-badge" style={{ marginBottom: '12px' }}>
           College Project Documentation
@@ -16,11 +12,10 @@ const About = () => {
           Full-Stack Blog System <span className="gradient-text">Architecture</span>
         </h1>
         <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '720px', margin: '0 auto' }}>
-          Comprehensive documentation explaining the system design, relational database modeling, stateless JWT authentication, and component structure.
+          System documentation explaining design, relational database modeling, stateless JWT authentication, and component structure.
         </p>
       </div>
 
-      {/* Architecture Highlights */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '48px' }}>
         <div className="glass-card" style={{ padding: '28px' }}>
           <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
@@ -28,7 +23,7 @@ const About = () => {
           </div>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Frontend (React + Vite)</h3>
           <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6' }}>
-            Built using modular functional components, React Context for global authentication state, client-side routing with React Router v7, and custom Axios API interceptors.
+            Built using modular functional components, React Context for global authentication state, client-side routing with React Router, and Axios API interceptors.
           </p>
         </div>
 
@@ -38,7 +33,7 @@ const About = () => {
           </div>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Backend (Node + Express)</h3>
           <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6' }}>
-            Structured using MVC design principles: isolated controllers, token-verification middlewares, parameterized SQL sanitization against SQL injection, and structured error boundaries.
+            Structured with controllers, models, routes, token-verification middlewares, and parameterized SQL queries against SQL injection.
           </p>
         </div>
 
@@ -48,16 +43,15 @@ const About = () => {
           </div>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Database (MySQL 8.0)</h3>
           <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6' }}>
-            Relational InnoDB engine with foreign keys (`ON DELETE CASCADE`), unique constraints for likes and emails, and automatic dual-engine fallback for zero-configuration testing.
+            Relational InnoDB engine with foreign keys (ON DELETE CASCADE), unique constraints for likes and emails, and dual-engine fallback.
           </p>
         </div>
       </div>
 
-      {/* Relational Schema Section */}
       <div className="glass-card" style={{ padding: '36px', marginBottom: '48px' }}>
         <h2 style={{ fontSize: '1.6rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Database size={22} color="#6366f1" />
-          <span>Relational Database Modeling (Entity-Relationship)</span>
+          <span>Relational Database Modeling</span>
         </h2>
         <p style={{ color: '#94a3b8', marginBottom: '24px', fontSize: '0.95rem' }}>
           The schema contains 4 normalized tables with strict relational integrity:
@@ -71,7 +65,7 @@ const About = () => {
               <li>• name (VARCHAR)</li>
               <li>• email (VARCHAR UNIQUE)</li>
               <li>• password (BCRYPT HASH)</li>
-              <li>• role (ENUM)</li>
+              <li>• role (VARCHAR)</li>
               <li>• created_at (TIMESTAMP)</li>
             </ul>
           </div>
@@ -112,11 +106,10 @@ const About = () => {
         </div>
       </div>
 
-      {/* REST API Endpoints Table */}
       <div className="glass-card" style={{ padding: '36px', marginBottom: '48px' }}>
         <h2 style={{ fontSize: '1.6rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <FileCode size={22} color="#8b5cf6" />
-          <span>RESTful API Endpoints</span>
+          <span>REST API Endpoints</span>
         </h2>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
@@ -133,31 +126,31 @@ const About = () => {
                 <td style={{ padding: '10px' }}><span style={{ color: '#34d399', fontWeight: 700 }}>POST</span></td>
                 <td style={{ padding: '10px' }}><code>/api/auth/register</code></td>
                 <td style={{ padding: '10px' }}>Public</td>
-                <td style={{ padding: '10px' }}>Register new user account</td>
+                <td style={{ padding: '10px' }}>Register new user</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#34d399', fontWeight: 700 }}>POST</span></td>
                 <td style={{ padding: '10px' }}><code>/api/auth/login</code></td>
                 <td style={{ padding: '10px' }}>Public</td>
-                <td style={{ padding: '10px' }}>Authenticate user & return JWT token</td>
+                <td style={{ padding: '10px' }}>User login & JWT issuance</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#60a5fa', fontWeight: 700 }}>GET</span></td>
                 <td style={{ padding: '10px' }}><code>/api/posts</code></td>
                 <td style={{ padding: '10px' }}>Public</td>
-                <td style={{ padding: '10px' }}>Get all posts with search & category filters</td>
+                <td style={{ padding: '10px' }}>Get all posts with filters</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#60a5fa', fontWeight: 700 }}>GET</span></td>
                 <td style={{ padding: '10px' }}><code>/api/posts/:id</code></td>
-                <td style={{ padding: '10px' }}>Public (Optional Auth)</td>
-                <td style={{ padding: '10px' }}>Get detailed post, author, comments, like state</td>
+                <td style={{ padding: '10px' }}>Optional Auth</td>
+                <td style={{ padding: '10px' }}>Get post details with comments & like state</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#34d399', fontWeight: 700 }}>POST</span></td>
                 <td style={{ padding: '10px' }}><code>/api/posts</code></td>
                 <td style={{ padding: '10px' }}>JWT Bearer</td>
-                <td style={{ padding: '10px' }}>Create new blog post</td>
+                <td style={{ padding: '10px' }}>Publish new blog post</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#fbbf24', fontWeight: 700 }}>PUT</span></td>
@@ -169,19 +162,19 @@ const About = () => {
                 <td style={{ padding: '10px' }}><span style={{ color: '#f87171', fontWeight: 700 }}>DELETE</span></td>
                 <td style={{ padding: '10px' }}><code>/api/posts/:id</code></td>
                 <td style={{ padding: '10px' }}>JWT (Author)</td>
-                <td style={{ padding: '10px' }}>Delete post and its comments/likes</td>
+                <td style={{ padding: '10px' }}>Delete post and relations</td>
               </tr>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={{ padding: '10px' }}><span style={{ color: '#34d399', fontWeight: 700 }}>POST</span></td>
                 <td style={{ padding: '10px' }}><code>/api/likes/post/:postId</code></td>
                 <td style={{ padding: '10px' }}>JWT Bearer</td>
-                <td style={{ padding: '10px' }}>Toggle post like status</td>
+                <td style={{ padding: '10px' }}>Toggle post like</td>
               </tr>
               <tr>
                 <td style={{ padding: '10px' }}><span style={{ color: '#34d399', fontWeight: 700 }}>POST</span></td>
                 <td style={{ padding: '10px' }}><code>/api/comments/post/:postId</code></td>
                 <td style={{ padding: '10px' }}>JWT Bearer</td>
-                <td style={{ padding: '10px' }}>Add comment to post</td>
+                <td style={{ padding: '10px' }}>Add comment</td>
               </tr>
             </tbody>
           </table>

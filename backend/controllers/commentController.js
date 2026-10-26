@@ -1,141 +1,64 @@
-const db = require('../config/db');
+const commentModel = require('../models/commentModel');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
-// -------------------------------------------------------------
-// Get Comments for a Post
-// -------------------------------------------------------------
-exports.getCommentsByPost = async (req, res) => {
+const getComments = async (req, res) => {
   try {
-    const postId = req.params.postId;
-
-    const query = `
-      SELECT 
-        c.id, 
-        c.post_id, 
-        c.user_id, 
-        c.content, 
-        c.created_at,
-        u.name AS user_name,
-        u.avatar AS user_avatar
-      FROM comments c
-      JOIN users u ON c.user_id = u.id
-      WHERE c.post_id = ?
-      ORDER BY c.created_at DESC
-    `;
-
-    const [comments] = await db.query(query, [postId]);
-
-    return res.status(200).json({
-      success: true,
-      count: comments.length,
-      comments
-    });
+    const comments = await commentModel.getByPostId(req.params.postId);
+    return sendSuccess(res, 'Comments fetched', { count: comments.length, comments });
   } catch (err) {
-    console.error('Error fetching comments:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve comments.'
-    });
+    return sendError(res, 'Failed to retrieve comments', 500);
   }
 };
 
-// -------------------------------------------------------------
-// Add New Comment
-// -------------------------------------------------------------
-exports.addComment = async (req, res) => {
+const addComment = async (req, res) => {
   try {
-    const postId = req.params.postId;
     const { content } = req.body;
+    const postId = req.params.postId;
     const userId = req.user.id;
 
     if (!content || !content.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Comment content cannot be empty.'
-      });
+      return sendError(res, 'Comment text cannot be empty', 400);
     }
 
-    // Verify post exists
-    const [posts] = await db.query('SELECT id FROM posts WHERE id = ?', [postId]);
-    if (posts.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cannot comment: Blog post not found.'
-      });
-    }
+    const commentId = await commentModel.create(postId, userId, content.trim());
+    const newComment = {
+      id: commentId,
+      post_id: Number(postId),
+      user_id: userId,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      user_name: req.user.name
+    };
 
-    const insertSql = `
-      INSERT INTO comments (post_id, user_id, content)
-      VALUES (?, ?, ?)
-    `;
-
-    const [result] = await db.query(insertSql, [postId, userId, content.trim()]);
-    const newCommentId = result.insertId;
-
-    // Fetch the inserted comment with user details
-    const [inserted] = await db.query(`
-      SELECT 
-        c.id, 
-        c.post_id, 
-        c.user_id, 
-        c.content, 
-        c.created_at,
-        u.name AS user_name,
-        u.avatar AS user_avatar
-      FROM comments c
-      JOIN users u ON c.user_id = u.id
-      WHERE c.id = ?
-    `, [newCommentId]);
-
-    return res.status(201).json({
-      success: true,
-      message: 'Comment added successfully!',
-      comment: inserted[0]
-    });
+    return sendSuccess(res, 'Comment posted successfully', { comment: newComment }, 201);
   } catch (err) {
-    console.error('Error adding comment:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to post comment.'
-    });
+    return sendError(res, 'Failed to post comment', 500);
   }
 };
 
-// -------------------------------------------------------------
-// Delete Comment
-// -------------------------------------------------------------
-exports.deleteComment = async (req, res) => {
+const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
-    const userId = req.user.id;
-    const userRole = req.user.role;
+    const existing = await commentModel.getById(commentId);
 
-    const [existing] = await db.query('SELECT user_id, post_id FROM comments WHERE id = ?', [commentId]);
-    if (existing.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Comment not found.'
-      });
+    if (!existing) {
+      return sendError(res, 'Comment not found', 404);
     }
 
-    // Allow deletion if user is comment author or admin
-    if (existing[0].user_id !== userId && userRole !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized. You can only delete your own comments.'
-      });
+    if (existing.user_id !== req.user.id && req.user.role !== 'admin') {
+      return sendError(res, 'You can only delete your own comments', 403);
     }
 
-    await db.query('DELETE FROM comments WHERE id = ?', [commentId]);
+    await commentModel.remove(commentId);
 
-    return res.status(200).json({
-      success: true,
-      message: 'Comment deleted successfully!'
-    });
+    return sendSuccess(res, 'Comment deleted successfully');
   } catch (err) {
-    console.error('Error deleting comment:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to delete comment.'
-    });
+    return sendError(res, 'Failed to delete comment', 500);
   }
+};
+
+module.exports = {
+  getComments,
+  addComment,
+  deleteComment
 };

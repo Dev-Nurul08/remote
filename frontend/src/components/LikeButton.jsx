@@ -10,7 +10,7 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
 
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setLikesCount(initialLikesCount);
@@ -19,25 +19,24 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
 
   const handleToggleLike = async () => {
     if (!isAuthenticated) {
-      if (window.confirm('You must be logged in to like this blog post. Would you like to go to the login page?')) {
+      if (window.confirm('Please log in to like this post. Go to login?')) {
         navigate('/login');
       }
       return;
     }
 
-    if (isSubmitting) return;
+    if (submitting) return;
 
-    // Optimistic UI Update
-    const prevCount = likesCount;
-    const prevLiked = isLiked;
+    const previousCount = likesCount;
+    const previousState = isLiked;
 
-    setIsLiked(!prevLiked);
-    setLikesCount(prevLiked ? Math.max(0, prevCount - 1) : prevCount + 1);
-    setIsSubmitting(true);
+    setIsLiked(!previousState);
+    setLikesCount(previousState ? Math.max(0, previousCount - 1) : previousCount + 1);
+    setSubmitting(true);
 
     try {
       const res = await likeAPI.toggle(postId);
-      if (res.data && res.data.success) {
+      if (res.data?.success) {
         setIsLiked(res.data.is_liked);
         setLikesCount(res.data.likes_count);
         if (onLikeChange) {
@@ -45,12 +44,10 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
         }
       }
     } catch (err) {
-      console.error('Failed to toggle like:', err);
-      // Revert optimistic update
-      setIsLiked(prevLiked);
-      setLikesCount(prevCount);
+      setIsLiked(previousState);
+      setLikesCount(previousCount);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -58,9 +55,9 @@ const LikeButton = ({ postId, initialLikesCount = 0, initialIsLiked = false, onL
     <button
       onClick={handleToggleLike}
       className={`like-btn ${isLiked ? 'liked' : ''}`}
-      disabled={isSubmitting}
+      disabled={submitting}
       id={`btn-like-post-${postId}`}
-      title={isLiked ? 'Unlike this post' : 'Like this post'}
+      title={isLiked ? 'Unlike' : 'Like'}
     >
       <Heart
         size={20}

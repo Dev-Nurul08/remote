@@ -1,83 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Send, Trash2, User, LogIn } from 'lucide-react';
+import { MessageSquare, Send, Trash2, LogIn } from 'lucide-react';
 import { commentAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { getInitials, formatDate } from '../utils/helpers';
 
 const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
   const { user, isAuthenticated } = useAuth();
   const [comments, setComments] = useState(initialComments);
-  const [newComment, setNewComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Synchronize when initial comments prop updates
-  React.useEffect(() => {
+  useEffect(() => {
     setComments(initialComments);
   }, [initialComments]);
 
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  const formatDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
-
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!text.trim()) return;
 
-    setIsSubmitting(true);
-    setErrorMsg('');
+    setLoading(true);
+    setError('');
 
     try {
-      const res = await commentAPI.add(postId, { content: newComment.trim() });
-      if (res.data && res.data.success) {
+      const res = await commentAPI.add(postId, { content: text.trim() });
+      if (res.data?.success) {
         const added = res.data.comment;
         const updated = [added, ...comments];
         setComments(updated);
-        setNewComment('');
+        setText('');
         if (onCommentChange) onCommentChange(updated.length);
       }
     } catch (err) {
-      console.error('Failed to post comment:', err);
-      setErrorMsg(err.response?.data?.message || 'Could not post your comment. Please try again.');
+      setError(err.response?.data?.message || 'Could not post comment');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   const handleDeleteComment = async (commentId) => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    if (!window.confirm('Delete this comment?')) return;
 
     try {
       const res = await commentAPI.delete(commentId);
-      if (res.data && res.data.success) {
+      if (res.data?.success) {
         const updated = comments.filter((c) => c.id !== commentId);
         setComments(updated);
         if (onCommentChange) onCommentChange(updated.length);
       }
     } catch (err) {
-      console.error('Failed to delete comment:', err);
-      alert(err.response?.data?.message || 'Failed to delete comment.');
+      alert(err.response?.data?.message || 'Failed to delete');
     }
   };
 
@@ -88,7 +61,6 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
         <span>Discussion ({comments.length})</span>
       </h3>
 
-      {/* Comment Input or Guest Prompt */}
       {isAuthenticated ? (
         <div className="glass-card comment-input-card">
           <form onSubmit={handleAddComment}>
@@ -97,21 +69,21 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
                 {getInitials(user?.name)}
               </div>
               <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
-                Commenting as {user?.name}
+                {user?.name}
               </span>
             </div>
 
-            {errorMsg && (
+            {error && (
               <div className="alert-box alert-error" style={{ padding: '8px 12px', marginBottom: '12px' }}>
-                {errorMsg}
+                {error}
               </div>
             )}
 
             <textarea
               className="comment-textarea"
-              placeholder="Share your thoughts, ask questions, or contribute feedback..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               required
               id="comment-input-textarea"
             />
@@ -120,11 +92,11 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={isSubmitting || !newComment.trim()}
+                disabled={loading || !text.trim()}
                 id="comment-submit-button"
               >
                 <Send size={16} />
-                <span>{isSubmitting ? 'Posting...' : 'Post Comment'}</span>
+                <span>{loading ? 'Posting...' : 'Post Comment'}</span>
               </button>
             </div>
           </form>
@@ -133,7 +105,7 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
         <div className="glass-card" style={{ padding: '24px', textAlign: 'center', marginBottom: '32px' }}>
           <h4 style={{ fontSize: '1.15rem', marginBottom: '8px' }}>Join the Discussion</h4>
           <p style={{ color: '#94a3b8', fontSize: '0.92rem', marginBottom: '18px' }}>
-            Please log in to leave comments and engage with other readers.
+            Please sign in to post comments.
           </p>
           <Link to="/login" className="btn-primary" id="btn-login-to-comment">
             <LogIn size={16} />
@@ -142,40 +114,38 @@ const CommentSection = ({ postId, initialComments = [], onCommentChange }) => {
         </div>
       )}
 
-      {/* Comments List */}
       <div className="comments-list">
         {comments.length === 0 ? (
           <div className="glass-card" style={{ padding: '36px', textAlign: 'center', color: '#94a3b8' }}>
-            <p>No comments yet. Be the first to share your thoughts!</p>
+            <p>No comments yet. Be the first to share your thoughts.</p>
           </div>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="glass-card comment-item" id={`comment-item-${comment.id}`}>
+          comments.map((c) => (
+            <div key={c.id} className="glass-card comment-item" id={`comment-item-${c.id}`}>
               <div className="comment-avatar">
-                {getInitials(comment.user_name)}
+                {getInitials(c.user_name)}
               </div>
               <div className="comment-content-wrap">
                 <div className="comment-meta">
                   <div>
-                    <span className="comment-author-name">{comment.user_name || 'Anonymous User'}</span>
+                    <span className="comment-author-name">{c.user_name || 'User'}</span>
                     <span style={{ margin: '0 8px', color: '#64748b' }}>•</span>
-                    <span className="comment-date">{formatDate(comment.created_at)}</span>
+                    <span className="comment-date">{formatDate(c.created_at)}</span>
                   </div>
 
-                  {/* Allow comment deletion if the user is the author or admin */}
-                  {isAuthenticated && (user?.id === comment.user_id || user?.role === 'admin') && (
+                  {isAuthenticated && (user?.id === c.user_id || user?.role === 'admin') && (
                     <button
-                      onClick={() => handleDeleteComment(comment.id)}
+                      onClick={() => handleDeleteComment(c.id)}
                       className="btn-icon"
                       title="Delete Comment"
                       style={{ padding: '6px', color: '#f43f5e' }}
-                      id={`btn-delete-comment-${comment.id}`}
+                      id={`btn-delete-comment-${c.id}`}
                     >
                       <Trash2 size={14} />
                     </button>
                   )}
                 </div>
-                <p className="comment-text">{comment.content}</p>
+                <p className="comment-text">{c.content}</p>
               </div>
             </div>
           ))

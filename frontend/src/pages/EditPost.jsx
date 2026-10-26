@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit3, Image, Tag, Layers, FileText, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Edit3, AlertCircle, ArrowLeft } from 'lucide-react';
 import { postAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { calculateReadTime } from '../utils/helpers';
 
 const EditPost = () => {
   const { id } = useParams();
@@ -15,19 +16,18 @@ const EditPost = () => {
   const [coverImage, setCoverImage] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchPost = async () => {
-      setIsLoading(true);
+      setLoading(true);
       try {
         const res = await postAPI.getById(id);
-        if (res.data && res.data.success) {
+        if (res.data?.success) {
           const p = res.data.post;
 
-          // Check ownership
           if (p.author_id !== user?.id && user?.role !== 'admin') {
             alert('Unauthorized: You can only edit your own posts.');
             navigate(`/blog/${id}`);
@@ -42,10 +42,9 @@ const EditPost = () => {
           setContent(p.content || '');
         }
       } catch (err) {
-        console.error('Failed to load post for editing:', err);
-        setErrorMessage('Failed to load post details for editing.');
+        setError('Failed to load post details for editing.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -56,12 +55,12 @@ const EditPost = () => {
     e.preventDefault();
 
     if (!title.trim() || !content.trim()) {
-      setErrorMessage('Title and content are required fields.');
+      setError('Title and content are required fields.');
       return;
     }
 
-    setIsSubmitting(true);
-    setErrorMessage('');
+    setSubmitting(true);
+    setError('');
 
     try {
       const payload = {
@@ -70,25 +69,24 @@ const EditPost = () => {
         tags: tags.trim(),
         cover_image: coverImage.trim(),
         summary: summary.trim() || content.substring(0, 160) + '...',
-        content: content.trim(),
+        content: content.trim()
       };
 
       const res = await postAPI.update(id, payload);
-      if (res.data && res.data.success) {
+      if (res.data?.success) {
         navigate(`/blog/${id}`);
       }
     } catch (err) {
-      console.error('Failed to update post:', err);
-      setErrorMessage(err.response?.data?.message || 'Failed to update post.');
+      setError(err.response?.data?.message || 'Failed to update post.');
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <p style={{ color: '#94a3b8' }}>Loading article editor...</p>
+        <p style={{ color: '#94a3b8' }}>Loading editor...</p>
       </div>
     );
   }
@@ -111,10 +109,10 @@ const EditPost = () => {
         </p>
       </div>
 
-      {errorMessage && (
+      {error && (
         <div className="alert-box alert-error" id="edit-post-error">
           <AlertCircle size={18} />
-          <span>{errorMessage}</span>
+          <span>{error}</span>
         </div>
       )}
 
@@ -149,7 +147,7 @@ const EditPost = () => {
           </div>
 
           <div>
-            <label className="auth-label" htmlFor="edit-tags">Tags (comma separated)</label>
+            <label className="auth-label" htmlFor="edit-tags">Tags</label>
             <input
               id="edit-tags"
               type="text"
@@ -186,7 +184,7 @@ const EditPost = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            style={{ minHeight: '300px', fontSize: '1rem', lineHeight: '1.7' }}
+            style={{ minHeight: '280px', fontSize: '1rem', lineHeight: '1.7' }}
           />
         </div>
 
@@ -195,18 +193,17 @@ const EditPost = () => {
             type="button"
             onClick={() => navigate(`/blog/${id}`)}
             className="btn-secondary"
-            id="btn-cancel-edit"
           >
             Cancel
           </button>
           <button
             type="submit"
             className="btn-primary"
-            disabled={isSubmitting}
+            disabled={submitting}
             id="btn-save-edit"
           >
             <Edit3 size={16} />
-            <span>{isSubmitting ? 'Saving Changes...' : 'Save Changes'}</span>
+            <span>{submitting ? 'Saving...' : 'Save Changes'}</span>
           </button>
         </div>
       </form>

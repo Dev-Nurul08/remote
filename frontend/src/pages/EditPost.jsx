@@ -3,6 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Edit3, AlertCircle, ArrowLeft } from 'lucide-react';
 import { postAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { calculateReadTime } from '../utils/helpers';
+
+const PRESET_IMAGES = [
+  { label: 'Coding', url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000&auto=format&fit=crop&q=80' },
+  { label: 'Database', url: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1000&auto=format&fit=crop&q=80' },
+  { label: 'AI & Data', url: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1000&auto=format&fit=crop&q=80' },
+  { label: 'Workspace', url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1000&auto=format&fit=crop&q=80' },
+  { label: 'Cloud Server', url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000&auto=format&fit=crop&q=80' }
+];
 
 const EditPost = () => {
   const { id } = useParams();
@@ -18,6 +27,9 @@ const EditPost = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const readTime = calculateReadTime(content);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -164,6 +176,29 @@ const EditPost = () => {
             value={coverImage}
             onChange={(e) => setCoverImage(e.target.value)}
           />
+          <div style={{ marginTop: '10px' }}>
+            <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px' }}>Quick preset cover images:</span>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {PRESET_IMAGES.map((img, idx) => (
+                <button
+                  type="button"
+                  key={idx}
+                  onClick={() => setCoverImage(img.url)}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '0.8rem',
+                    borderRadius: '6px',
+                    border: coverImage === img.url ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                    backgroundColor: coverImage === img.url ? '#eff6ff' : '#ffffff',
+                    color: coverImage === img.url ? '#2563eb' : '#334155',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {img.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="auth-form-group">
@@ -177,7 +212,12 @@ const EditPost = () => {
         </div>
 
         <div className="auth-form-group">
-          <label className="auth-label" htmlFor="edit-content">Full Article Content *</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label className="auth-label" htmlFor="edit-content" style={{ margin: 0 }}>Full Article Content *</label>
+            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+              {wordCount} words • {readTime}
+            </span>
+          </div>
           <textarea
             id="edit-content"
             value={content}
